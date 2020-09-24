@@ -1,5 +1,4 @@
 import std;
-import std.typecons : Yes;
 
 
 //open rec r1,r1;tri r1,r1,r1 ; rec r1, r1  close
@@ -42,26 +41,118 @@ string[] tokenizeStr(string str) {
 		}
 	}
 
-    writeln(a);
+    //writeln(a);
     return a;
 }
 
 int checkGrammar(string[] tokens) {
-    int nextCheck = lastIndexOf(tokens, ";", 8);
-	if(nextCheck == -1){
-		nextCheck = 1;
+    int lastSemi = lastIndexOf(tokens, ";");
+	if(lastSemi == -1){
+		lastSemi = 1;
 	}
 
-	writeln(nextCheck);
+	if(!(tokens[0].equal("open"))){
+		return -1;
+	}
+	if(!(tokens[tokens.length - 1].equal("close"))){
+		return -1;
+	}
+
+	for(;lastSemi > 0;){
+		int nextCheck = lastSemi;
+
+		if(tokens[++nextCheck].equal("rec")){
+			if(lastSemi + 3 >= tokens.length){
+				writeln("Not enough Arguments for rec: ");
+				string error = "rec ";
+				for(int i = 0; lastSemi + i < tokens.length; i++){
+					error = error ~ tokens[i] ~ " ";
+				}
+				writeln(error);
+				return -1;
+			}	
+			
+			string coord;
+			for(int i = 0; i < 2; i++){
+				coord = tokens[++nextCheck];
+
+				if(checkCoord(coord) == -1){
+					writeln(coord, " is not a valid coordinate at");
+					writeln("rec ", tokens[lastSemi+2],',', tokens[lastSemi+3]);
+					return -1;
+				}//writeln("There may not be enough Arguments for tri at index ", nextCheck);
+			}
+
+		} else if(tokens[nextCheck].equal("tri")){
+			if(lastSemi + 4 >= tokens.length){
+				writeln("Not enough Arguments for tri at index ", nextCheck);
+				string error = "tri ";
+				for(int i = 0; lastSemi + i < tokens.length; i++){
+					error = error ~ tokens[i] ~ " ";
+				}
+				writeln(error);
+				return -1;
+			}			
+
+			string coord;
+			for(int i = 0; i < 3; i++){
+				coord = tokens[++nextCheck];
+
+				if(checkCoord(coord) == -1){
+					writeln(coord, " is not a valid coordinate at");
+					writeln("tri ", tokens[lastSemi+2],' ', tokens[lastSemi+3],' ', tokens[lastSemi+4]);
+					return -1;
+				}
+			}
+		}
+		
+		lastSemi = lastIndexOf(tokens, ";", lastSemi-1);
+	}
 
     return 0;
 }
 
+int checkCoord(string coord) {
+	if(coord.length != 2){
+		return -1;
+	}
+
+	// r | s | t | u | v | w | x 
+	switch(coord[0]) {
+		case 'r':
+		case 's':
+		case 't':
+		case 'u':
+		case 'v':
+		case 'w':
+		case 'x':
+			break;
+		default:
+			writeln(coord[0]," is not an allowed x coordinate.");
+			return -1;
+	}
+
+	// 1 | 2 | 3 | 4 | 5 | 6 | 
+	switch(coord[1]) {
+		case '1':
+		case '2':
+		case '3':
+		case '4':
+		case '5':
+		case '6':
+			break;
+		default:
+			writeln(coord[1]," is not an allowed y coordinate.");
+			return -1;
+	}
+
+	return 0;
+}
 void main()
 {
 
     string str;
-    writeln("Please enter the code: ");
+    writeln("Please enter the code: (use 'EXIT' to exit)");
     while ((str = stdin.readln()) !is null) {
         if(str == "EXIT\n"){
         	break;
@@ -69,10 +160,10 @@ void main()
     	string[] tokens = tokenizeStr(str);
 
         if(checkGrammar(tokens) != -1){
-		    
+		    writeln("\nGrammar Good");
 		} 
 
-		writeln("Please enter the code: ");
+		writeln("\nPlease enter the code: (use 'EXIT' to exit)");
     }
 
     writeln("ENDING");
