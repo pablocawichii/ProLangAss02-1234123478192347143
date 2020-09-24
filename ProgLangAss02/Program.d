@@ -58,7 +58,9 @@ int checkGrammar(string[] tokens) {
 		return -1;
 	}
 
-	for(;lastSemi > 0;){
+	bool doneFirst = false;
+
+	for(;lastSemi != -1;){
 		int nextCheck = lastSemi;
 
 		if(tokens[++nextCheck].equal("rec")){
@@ -73,12 +75,14 @@ int checkGrammar(string[] tokens) {
 			}	
 			
 			string coord;
+
 			for(int i = 0; i < 2; i++){
 				coord = tokens[++nextCheck];
 
+
 				if(checkCoord(coord) == -1){
 					writeln(coord, " is not a valid coordinate at");
-					writeln("rec ", tokens[lastSemi+2],',', tokens[lastSemi+3]);
+					writeln("rec ", tokens[lastSemi+2],' ', tokens[lastSemi+3]);
 					return -1;
 				}//writeln("There may not be enough Arguments for tri at index ", nextCheck);
 			}
@@ -107,6 +111,11 @@ int checkGrammar(string[] tokens) {
 		}
 		
 		lastSemi = lastIndexOf(tokens, ";", lastSemi-1);
+
+		if(lastSemi == -1 && doneFirst == false){
+			lastSemi = 0;
+			doneFirst = true;
+		}
 	}
 
     return 0;
