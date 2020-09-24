@@ -1,0 +1,7 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs
+/ProgLangAss02/.vs/ProgLangAss02/v16
+/ProgLangAss02/ProgLangAss02.sln
