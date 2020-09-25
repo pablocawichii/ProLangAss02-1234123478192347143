@@ -1,7 +1,7 @@
 import std;
 
 
-//open rec r1,r1;tri r1,r1,r1 ; rec r1, r1  close
+//open rec r1,r2;tri r3,r4,r5 ; rec r5, r6  close
 
 int lastIndexOf(string[] tokens, string text, int start = -1) {
 	if(start < 0 || start >= tokens.length){
@@ -84,7 +84,7 @@ int checkGrammar(string[] tokens) {
 					writeln(coord, " is not a valid coordinate at");
 					writeln("rec ", tokens[lastSemi+2],' ', tokens[lastSemi+3]);
 					return -1;
-				}//writeln("There may not be enough Arguments for tri at index ", nextCheck);
+				}
 			}
 
 		} else if(tokens[nextCheck].equal("tri")){
@@ -157,6 +157,70 @@ int checkCoord(string coord) {
 
 	return 0;
 }
+
+void parseTree(string[] tokens) {
+	string partree = "open <stmt_list> close";
+	int lastSemi = lastIndexOf(tokens, ";");
+	while(partree.indexOf("<") != -1){
+		writeln(partree);
+		
+		if(lastSemi == -1){
+			lastSemi = 0;
+		}
+
+		int stmt_list = partree.indexOf("<stmt_list>");
+
+		if(stmt_list != -1) {
+			if(lastSemi != 0){
+				partree = partree.replaceLast("<stmt_list>","<stmt> ; <stmt_list>");
+			} else {
+				partree = partree.replaceLast("<stmt_list>","<stmt>");
+			}
+			lastSemi = lastIndexOf(tokens, ";", lastSemi - 1);
+			continue;
+		}
+
+		int stmt = partree.indexOf("<stmt>");
+
+		if(stmt != -1) {
+			if(tokens[lastSemi+1].equal("rec")){
+				partree = partree.replaceLast("<stmt>", "rec <coord>, <coord>");
+				writeln(partree);
+
+				for(int k = 3; k > 1; k-- ){
+					partree = partree.replaceLast("<coord>", "<x><y>" );
+					writeln(partree);
+					string coord = tokens[lastSemi+k];
+					string y = to!string(coord[1]);
+					string x = to!string(coord[0]);
+					partree = partree.replaceLast("<y>",y);
+					writeln(partree);
+					partree = partree.replaceLast("<x>",x);
+					writeln(partree);
+				}
+			}
+			else if(tokens[lastSemi+1].equal("tri")){
+				partree = partree.replaceLast("<stmt>", "tri <coord>, <coord>, <coord>");
+				writeln(partree);
+
+				for(int k = 4; k > 1; k-- ){
+					partree = partree.replaceLast("<coord>", "<x><y>" );
+					writeln(partree);
+					string coord = tokens[lastSemi+k];
+					string y = to!string(coord[1]);
+					string x = to!string(coord[0]);
+					partree = partree.replaceLast("<y>",y);
+					writeln(partree);
+					partree = partree.replaceLast("<x>",x);
+					writeln(partree);
+				}
+			}				
+			lastSemi = lastIndexOf(tokens, ";", lastSemi - 1);
+			continue;
+		}
+	}
+}
+
 void main()
 {
 
@@ -166,10 +230,13 @@ void main()
         if(str == "EXIT\n"){
         	break;
         }
+		if(str == "\n") { writeln("Please enter the code: (use 'EXIT' to exit)"); continue;}
+
     	string[] tokens = tokenizeStr(str);
 
         if(checkGrammar(tokens) != -1){
 		    writeln("\nGrammar Good");
+			parseTree(tokens);
 		} 
 
 		writeln("\nPlease enter the code: (use 'EXIT' to exit)");
