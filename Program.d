@@ -73,7 +73,7 @@ string[] tokenizeStr(string str) {
 int checkGrammar(string[] tokens) {
     int lastSemi = lastIndexOf(tokens, ";");
 	if(lastSemi == -1){
-		lastSemi = 1;
+		lastSemi = 0;
 	}
 
 	if(!(tokens[0].equal("open"))){
@@ -156,6 +156,14 @@ int checkGrammar(string[] tokens) {
 					return -1;
 				}
 			}
+		} else {
+			writeln(tokens[nextCheck] ~ " is not a valid command at");
+			string error = "";
+			for(int i = 1; lastSemi + i < tokens.length && !tokens[lastSemi + i].equal(";") ; i++){
+				error = error ~ tokens[lastSemi + i] ~ " ";
+			}
+			writeln(error);
+			return -1;
 		}
 		
 		lastSemi = lastIndexOf(tokens, ";", lastSemi-1);
