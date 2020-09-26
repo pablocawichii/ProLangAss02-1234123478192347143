@@ -1,7 +1,7 @@
 import std;
 
 
-//open rec r1,r2;tri r3,r4,r5 ; rec r5, r6  close
+//open rec r1, r2;tri r3 ,r4, r5 ; rec r5 ,r6  close
 
 int lastIndexOf(string[] tokens, string text, int start = -1) {
 	if(start < 0 || start >= tokens.length){
@@ -16,9 +16,10 @@ int lastIndexOf(string[] tokens, string text, int start = -1) {
 }
 
 string[] tokenizeStr(string str) {
-    string[] a = str.split(regex("[\r\n\t\f\v, ]"));
+    string[] a = str.split(regex("[\r\n\t\f\v ]"));
 
     for(int i = a.length - 1; i >= 0 ; i--) {
+
 		if(a[i].indexOf(';') != -1){
 
             string[] b = a[i].split(";");
@@ -35,13 +36,37 @@ string[] tokenizeStr(string str) {
 		}
 	}
 
+	for(int i = a.length - 1; i >= 0 ; i--) {
+		if(a[i].equal(",")) { continue; }
+		if(a[i].indexOf(',') != -1){
+			
+            string[] b = a[i].split(",");
+			bool emptySpace = false;
+            for(int k = b.length - 1; k >= 0; k--) {
+				if(b[k].equal("")){
+				    b[k]=",";
+					emptySpace = true;
+				}
+			}
+
+			if(!emptySpace){
+				for(int k = b.length - 1; k > 0; k--) {
+				    b.insertInPlace(k, ",");
+				}
+			}
+
+            a = a.replace(i, i+1, b);
+			i = a.length - 1;
+		}
+	}
+
     for(int i = a.length - 1; i >= 0; i--){
 	    if(a[i].equal("")){
 		    a = a.remove(i);
 		}
 	}
 
-    //writeln(a);
+    writeln(a);
     return a;
 }
 
@@ -64,47 +89,70 @@ int checkGrammar(string[] tokens) {
 		int nextCheck = lastSemi;
 
 		if(tokens[++nextCheck].equal("rec")){
-			if(lastSemi + 3 >= tokens.length){
+			if(lastSemi + 4 >= tokens.length){
 				writeln("Not enough Arguments for rec: ");
-				string error = "rec ";
-				for(int i = 0; lastSemi + i < tokens.length; i++){
-					error = error ~ tokens[i] ~ " ";
+				string error = "";
+				for(int i = 1; lastSemi + i < tokens.length; i++){
+					error = error ~ tokens[lastSemi + i] ~ " ";
 				}
 				writeln(error);
 				return -1;
-			}	
+			}
+
+			if(!tokens[lastSemi + 3].equal(",") || tokens[lastSemi + 5].equal(",") ){
+				writeln("Wrong number of Arguments for rec: ");
+				string error = "";
+				for(int i = 1; lastSemi + i < tokens.length && !tokens[lastSemi + i].equal(";") ; i++){
+					error = error ~ tokens[lastSemi + i] ~ " ";
+				}
+				writeln(error);
+				return -1;
+			}
 			
 			string coord;
 
+			nextCheck += 1;
 			for(int i = 0; i < 2; i++){
-				coord = tokens[++nextCheck];
-
+				coord = tokens[nextCheck];
+				nextCheck += 2;
 
 				if(checkCoord(coord) == -1){
 					writeln(coord, " is not a valid coordinate at");
-					writeln("rec ", tokens[lastSemi+2],' ', tokens[lastSemi+3]);
+					writeln("rec ", tokens[lastSemi+2],',', tokens[lastSemi+4]);
 					return -1;
 				}
 			}
 
 		} else if(tokens[nextCheck].equal("tri")){
-			if(lastSemi + 4 >= tokens.length){
-				writeln("Not enough Arguments for tri at index ", nextCheck);
-				string error = "tri ";
-				for(int i = 0; lastSemi + i < tokens.length; i++){
-					error = error ~ tokens[i] ~ " ";
+			if(lastSemi + 6 >= tokens.length){
+				writeln("Not enough Arguments for tri: ");
+				string error = "";
+				for(int i = 1; lastSemi + i < tokens.length; i++){
+					error = error ~ tokens[lastSemi + i] ~ " ";
 				}
 				writeln(error);
 				return -1;
-			}			
+			}
+
+			if(!tokens[lastSemi + 3].equal(",") || !tokens[lastSemi + 5].equal(",") || tokens[lastSemi + 7].equal(",") ){
+				writeln("Wrong number of Arguments for tri: ");
+				string error = "";
+				for(int i = 1; lastSemi + i < tokens.length && !tokens[lastSemi + i].equal(";") ; i++){
+					error = error ~ tokens[lastSemi + i] ~ " ";
+				}
+				writeln(error);
+				return -1;
+			}
 
 			string coord;
+			nextCheck += 1;
 			for(int i = 0; i < 3; i++){
-				coord = tokens[++nextCheck];
+				coord = tokens[nextCheck];
+				nextCheck += 2;
 
 				if(checkCoord(coord) == -1){
 					writeln(coord, " is not a valid coordinate at");
-					writeln("tri ", tokens[lastSemi+2],' ', tokens[lastSemi+3],' ', tokens[lastSemi+4]);
+					writeln("tri ", tokens[lastSemi+2], ',', tokens[lastSemi+4], ',', tokens[lastSemi+6]);
 					return -1;
 				}
 			}
@@ -187,7 +235,7 @@ void parseTree(string[] tokens) {
 				partree = partree.replaceLast("<stmt>", "rec <coord>, <coord>");
 				writeln(partree);
 
-				for(int k = 3; k > 1; k-- ){
+				for(int k = 4; k > 1; k-=2 ){
 					partree = partree.replaceLast("<coord>", "<x><y>" );
 					writeln(partree);
 					string coord = tokens[lastSemi+k];
@@ -203,7 +251,7 @@ void parseTree(string[] tokens) {
 				partree = partree.replaceLast("<stmt>", "tri <coord>, <coord>, <coord>");
 				writeln(partree);
 
-				for(int k = 4; k > 1; k-- ){
+				for(int k = 6; k > 1; k-=2 ){
 					partree = partree.replaceLast("<coord>", "<x><y>" );
 					writeln(partree);
 					string coord = tokens[lastSemi+k];
