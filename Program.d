@@ -3,6 +3,8 @@ import std;
 
 //open rec r1, r2;tri r3 ,r4, r5 ; rec r5 ,r6  close
 //open rec r1, r2; tri r3, r4, r5 close
+//open rec r1, r2 close
+//open tri r1, r2, r3 close
 
 int lastIndexOf(string[] tokens, string text, int start = -1) {
 	if(start < 0 || start >= tokens.length){
@@ -391,19 +393,8 @@ void printParseTree(string[][] treeArr){
 	}
 
 	writeln(count);
-	int treeL;
+	int treeL = 160;
 
-	switch(count){
-		case 1:
-			treeL = 180;
-			break;
-		case 2:
-			treeL = 160;
-			break;
-		case 3:
-		default:
-			treeL = 150;
-	}
 
 	for(int i = 0; i < treeArr.length; i++){
 		string outp = "";
@@ -411,6 +402,10 @@ void printParseTree(string[][] treeArr){
 
 		for (int k = 0; k < treeArr[i].length; k++){
 			outp ~= getPrintLine(treeArr[i][k], lw);
+		}
+
+		while(outp.length < treeL){
+			outp = " " ~ outp ~ " ";
 		}
 
 		writeln(outp);
