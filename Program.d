@@ -2,6 +2,7 @@ import std;
 
 
 //open rec r1, r2;tri r3 ,r4, r5 ; rec r5 ,r6  close
+//open rec r1, r2; tri r3, r4, r5 close
 
 int lastIndexOf(string[] tokens, string text, int start = -1) {
 	if(start < 0 || start >= tokens.length){
@@ -77,9 +78,11 @@ int checkGrammar(string[] tokens) {
 	}
 
 	if(!(tokens[0].equal("open"))){
+		writeln("Program must start with open.");
 		return -1;
 	}
 	if(!(tokens[tokens.length - 1].equal("close"))){
+		writeln("Program must end with close.");
 		return -1;
 	}
 
@@ -214,8 +217,27 @@ int checkCoord(string coord) {
 	return 0;
 }
 
-void parseTree(string[] tokens) {
+string[][] derivation(string[] tokens) {
 	string partree = "open <stmt_list> close";
+	string[][] outpArr = [["<program>"], ["/", "|", "\\"], ["open", "<stmt_list>", "close"], //Guaranteed to Exist
+						  [], // |
+						  [], // STMT
+						  [], // |
+						  [], // Rec
+						  [], // |
+						  [], // X, Y
+						  [], // |
+						  [] // Value
+						  ];
+	int currOutpArrPos = 3;
+	int progCount = 1;
+	int timesPassed = 0;
+	for(int i = 0; i < tokens.length; i++){
+		if(tokens[i].equal(";")){
+			progCount++;
+			outpArr ~= [[],[]];
+		}
+	}
 	int lastSemi = lastIndexOf(tokens, ";");
 	while(partree.indexOf("<") != -1){
 		writeln(partree);
@@ -229,10 +251,33 @@ void parseTree(string[] tokens) {
 		if(stmt_list != -1) {
 			if(lastSemi != 0){
 				partree = partree.replaceLast("<stmt_list>","<stmt> ; <stmt_list>");
+				outpArr[currOutpArrPos] ~= ["/", "\\"] ;
+				outpArr[currOutpArrPos + 1] ~= ["<stmt>;", "<stmt_list>"] ;
+				for(int i = 0; i <= timesPassed; i++) {
+					if(tokens[lastSemi+1].equal("rec")){
+						outpArr[currOutpArrPos + 2] ~= ["|"];
+						outpArr[currOutpArrPos + 3] ~= ["|"];
+					} else {
+						outpArr[currOutpArrPos + 2] ~= ["|"];
+						outpArr[currOutpArrPos + 3] ~= ["|"];
+					}
+					
+				}
+				currOutpArrPos += 2;
 			} else {
 				partree = partree.replaceLast("<stmt_list>","<stmt>");
+				if(timesPassed) {
+					outpArr[currOutpArrPos] ~= ["\\"] ;
+				}
+				else {
+					outpArr[currOutpArrPos] ~= ["|"] ;
+				}
+				outpArr[currOutpArrPos + 1] ~= ["<stmt>"]  ;
+				currOutpArrPos += 2;
 			}
 			lastSemi = lastIndexOf(tokens, ";", lastSemi - 1);
+
+			timesPassed++;
 			continue;
 		}
 
@@ -241,8 +286,16 @@ void parseTree(string[] tokens) {
 		if(stmt != -1) {
 			if(tokens[lastSemi+1].equal("rec")){
 				partree = partree.replaceLast("<stmt>", "rec <coord>, <coord>");
+
 				writeln(partree);
 
+				outpArr[currOutpArrPos] = ["/", "|", "\\"] ~ outpArr[currOutpArrPos];
+				outpArr[currOutpArrPos + 1] = ["rec ", "<coord>,", "<coord>"] ~ outpArr[currOutpArrPos + 1];
+				outpArr[currOutpArrPos + 2] = ["/","\\", "/","\\" ] ~ outpArr[currOutpArrPos + 2];
+				outpArr[currOutpArrPos + 3] = ["<x>", "<y>","<x>", "<y>"] ~ outpArr[currOutpArrPos + 3];
+				currOutpArrPos += 4;
+
+				string [][] outpCoordArr = [[],[]];
 				for(int k = 4; k > 1; k-=2 ){
 					partree = partree.replaceLast("<coord>", "<x><y>" );
 					writeln(partree);
@@ -250,15 +303,29 @@ void parseTree(string[] tokens) {
 					string y = to!string(coord[1]);
 					string x = to!string(coord[0]);
 					partree = partree.replaceLast("<y>",y);
+					outpCoordArr[0] = [" | "] ~ outpCoordArr[0];
+					outpCoordArr[1] = [y] ~ outpCoordArr[1];
 					writeln(partree);
 					partree = partree.replaceLast("<x>",x);
+					outpCoordArr[0] = [" | "] ~ outpCoordArr[0];
+					outpCoordArr[1] = [x]  ~ outpCoordArr[1];
 					writeln(partree);
 				}
+				outpArr[currOutpArrPos] = outpCoordArr[0] ~ outpArr[currOutpArrPos];
+				outpArr[currOutpArrPos + 1] = outpCoordArr[1] ~ outpArr[currOutpArrPos + 1];
+				currOutpArrPos+=2;
+
 			}
 			else if(tokens[lastSemi+1].equal("tri")){
 				partree = partree.replaceLast("<stmt>", "tri <coord>, <coord>, <coord>");
 				writeln(partree);
-
+			
+				outpArr[currOutpArrPos] = ["/", "|", "\\", "\\"] ~ outpArr[currOutpArrPos];
+				outpArr[currOutpArrPos + 1] = ["tri ", "<coord>,", "<coord>,", "<coord>"] ~ outpArr[currOutpArrPos + 1];
+				outpArr[currOutpArrPos + 2] = ["/","\\", "/","\\" , "/", "\\"] ~ outpArr[currOutpArrPos + 2];
+				outpArr[currOutpArrPos + 3] = ["<x>", "<y>","<x>", "<y>","<x>", "<y>"] ~ outpArr[currOutpArrPos + 3];
+				currOutpArrPos += 4;
+				string [][] outpCoordArr = [[],[]];
 				for(int k = 6; k > 1; k-=2 ){
 					partree = partree.replaceLast("<coord>", "<x><y>" );
 					writeln(partree);
@@ -266,16 +333,91 @@ void parseTree(string[] tokens) {
 					string y = to!string(coord[1]);
 					string x = to!string(coord[0]);
 					partree = partree.replaceLast("<y>",y);
+					outpCoordArr[0] = [" | "] ~ outpCoordArr[0];
+					outpCoordArr[1] = [y]  ~ outpCoordArr[1];
 					writeln(partree);
 					partree = partree.replaceLast("<x>",x);
+					outpCoordArr[0] = [" | "] ~ outpCoordArr[0];
+					outpCoordArr[1] = [x] ~ outpCoordArr[1];
 					writeln(partree);
 				}
+
+				outpArr[currOutpArrPos] = outpCoordArr[0] ~ outpArr[currOutpArrPos];
+				outpArr[currOutpArrPos + 1] = outpCoordArr[1] ~ outpArr[currOutpArrPos + 1];
+				currOutpArrPos+=2;
 			}				
+			currOutpArrPos-= 6;
+			
+			outpArr[currOutpArrPos + 2] = " " ~ outpArr[currOutpArrPos + 2];
+			outpArr[currOutpArrPos + 3] = " " ~ outpArr[currOutpArrPos + 3];
+			outpArr[currOutpArrPos + 4] = " " ~ outpArr[currOutpArrPos + 4];
+			outpArr[currOutpArrPos + 5] = " " ~ outpArr[currOutpArrPos + 5];
+			outpArr[currOutpArrPos + 2] = " " ~ outpArr[currOutpArrPos + 2];
+			outpArr[currOutpArrPos + 3] = " " ~ outpArr[currOutpArrPos + 3];
+			outpArr[currOutpArrPos + 4] = " " ~ outpArr[currOutpArrPos + 4];
+			outpArr[currOutpArrPos + 5] = " " ~ outpArr[currOutpArrPos + 5];
+
 			lastSemi = lastIndexOf(tokens, ";", lastSemi - 1);
-			continue;
+			
+		}
+
+	}
+
+	return outpArr;
+}
+
+string getPrintLine(string x, int len){
+	int space = (len - x.length)/2;
+
+	if(space > len){
+		return x;
+	}
+
+	for(int i = 0; i < space; i++){
+		x = " " ~ x ~ " ";
+	}
+
+	return x;
+}
+
+void printParseTree(string[][] treeArr){
+
+	int count = 1;
+
+	for(int i = 0; i < treeArr[treeArr.length - 7].length; i++){
+		if(treeArr[treeArr.length - 7][i].equal("|")){
+			count++;
 		}
 	}
+
+	writeln(count);
+	int treeL;
+
+	switch(count){
+		case 1:
+			treeL = 180;
+			break;
+		case 2:
+			treeL = 160;
+			break;
+		case 3:
+		default:
+			treeL = 150;
+	}
+
+	for(int i = 0; i < treeArr.length; i++){
+		string outp = "";
+		int lw = treeL/treeArr[i].length;
+
+		for (int k = 0; k < treeArr[i].length; k++){
+			outp ~= getPrintLine(treeArr[i][k], lw);
+		}
+
+		writeln(outp);
+		writeln();
+	}
 }
+
 
 void main()
 {
@@ -292,13 +434,16 @@ void main()
 
         if(checkGrammar(tokens) != -1){
 		    writeln("\nGrammar Good");
-			parseTree(tokens);
+			string[][] treeArr = derivation(tokens);
+			
+			printParseTree(treeArr);
 		} 
+
+		//writeln(getPrintLine(str, 50));
 
 		writeln("\nPlease enter the code: (use 'EXIT' to exit)");
     }
 
     writeln("ENDING");
 }
-
 
