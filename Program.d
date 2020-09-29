@@ -6,79 +6,112 @@ import std;
 //open rec r1, r2 close
 //open tri r1, r2, r3 close
 
+// This function finds the index of a string in an array.
+// Returns -1 if not found.
 int lastIndexOf(string[] tokens, string text, int start = -1) {
+	// Ensures start position is valid
 	if(start < 0 || start >= tokens.length){
 		start = tokens.length - 1;
 	}
-    for(int i = start; i >= 0; i--){
-	    if(tokens[i].equal(text)){
+
+	// Goes through array, beginning at start position.
+  for(int i = start; i >= 0; i--){
+    if(tokens[i].equal(text)){
+			// Returns position
 			return i;
 		}
 	}
+
+	// Returns -1 if not found.
 	return -1;
 }
 
+// Strips the string into different segments of the grammar.
+// Seperates words, ';', and ','
 string[] tokenizeStr(string str) {
-    string[] a = str.split(regex("[\r\n\t\f\v ]"));
+	// Initially seperates by empty space.
+  string[] a = str.split(regex("[\r\n\t\f\v ]"));
 
-    for(int i = a.length - 1; i >= 0 ; i--) {
+  // Finds and seperates semi colons. 
+  for(int i = a.length - 1; i >= 0 ; i--) {
 
+  	// Looks for a ';' within string.
 		if(a[i].indexOf(';') != -1){
 
-            string[] b = a[i].split(";");
-            for(int k = 0; k < b.length; k++) {
+			// Seperates the ';' from the string.
+      string[] b = a[i].split(";");
+
+      // Inserts it into its place
+      for(int k = 0; k < b.length; k++) {
 				if(b[k].equal("")){
-				    b[k]=";";
+			    b[k]=";";
 					break;
 				}
-                if(k == 1) {
-				    b.insertInPlace(1, ";");
+        if(k == 1) {
+			    b.insertInPlace(1, ";");
 				}
 			}
-            a = a.replace(i, i+1, b);
+
+			// Replaces the old string
+			// with the seperate strings
+      a = a.replace(i, i+1, b);
 		}
 	}
 
+	// Finds and seperates ','
 	for(int i = a.length - 1; i >= 0 ; i--) {
+		// Determines if the comma is already seperated.
 		if(a[i].equal(",")) { continue; }
+
+		// Determines if string has a comma
 		if(a[i].indexOf(',') != -1){
 			
-            string[] b = a[i].split(",");
+			// Seperates words by ','
+      string[] b = a[i].split(",");
+			
+			// Variable to see if any empty spaces has been filled
 			bool emptySpace = false;
-            for(int k = b.length - 1; k >= 0; k--) {
+
+			// Looks For Empty Space and Fills it
+      for(int k = b.length - 1; k >= 0; k--) {
 				if(b[k].equal("")){
-				    b[k]=",";
+			    b[k]=",";
 					emptySpace = true;
 				}
 			}
 
+			// If no empty space, then put ',' in center
 			if(!emptySpace){
 				for(int k = b.length - 1; k > 0; k--) {
 				    b.insertInPlace(k, ",");
 				}
 			}
 
-            a = a.replace(i, i+1, b);
+			// Replace old text with new text.
+      a = a.replace(i, i+1, b);
 			i = a.length - 1;
 		}
 	}
 
-    for(int i = a.length - 1; i >= 0; i--){
-	    if(a[i].equal("")){
-		    a = a.remove(i);
+	// Remove any empty space from array.
+  for(int i = a.length - 1; i >= 0; i--){
+    if(a[i].equal("")){
+	    a = a.remove(i);
 		}
 	}
 
-    writeln(a);
-    return a;
+	// Writeln is for Debugging
+  // writeln(a);
+  // Returns the now tokenized string
+  return a;
 }
 
+// Checks the grammar of the string.
+// Uses the previously created tokens.
+// Returns -1 if there is an error in syntax.
 int checkGrammar(string[] tokens) {
-    int lastSemi = lastIndexOf(tokens, ";");
-	if(lastSemi == -1){
-		lastSemi = 0;
-	}
-
+	// Checks if program begins with 'open'
+	// And ends with 'close'
 	if(!(tokens[0].equal("open"))){
 		writeln("Program must start with open.");
 		return -1;
@@ -88,103 +121,87 @@ int checkGrammar(string[] tokens) {
 		return -1;
 	}
 
-	bool doneFirst = false;
-
-	for(;lastSemi != -1;){
-		int nextCheck = lastSemi;
-
-		if(tokens[++nextCheck].equal("rec")){
-			if(lastSemi + 4 >= tokens.length){
-				writeln("Not enough Arguments for rec: ");
-				string error = "";
-				for(int i = 1; lastSemi + i < tokens.length; i++){
-					error = error ~ tokens[lastSemi + i] ~ " ";
-				}
-				writeln(error);
-				return -1;
-			}
-
-			if(!tokens[lastSemi + 3].equal(",") || tokens[lastSemi + 5].equal(",") ){
-				writeln("Wrong number of Arguments for rec: ");
-				string error = "";
-				for(int i = 1; lastSemi + i < tokens.length && !tokens[lastSemi + i].equal(";") ; i++){
-					error = error ~ tokens[lastSemi + i] ~ " ";
-				}
-				writeln(error);
-				return -1;
-			}
-			
-			string coord;
-
-			nextCheck += 1;
-			for(int i = 0; i < 2; i++){
-				coord = tokens[nextCheck];
-				nextCheck += 2;
-
-				if(checkCoord(coord) == -1){
-					writeln(coord, " is not a valid coordinate at");
-					writeln("rec ", tokens[lastSemi+2],',', tokens[lastSemi+4]);
-					return -1;
-				}
-			}
-
-		} else if(tokens[nextCheck].equal("tri")){
-			if(lastSemi + 6 >= tokens.length){
-				writeln("Not enough Arguments for tri: ");
-				string error = "";
-				for(int i = 1; lastSemi + i < tokens.length; i++){
-					error = error ~ tokens[lastSemi + i] ~ " ";
-				}
-				writeln(error);
-				return -1;
-			}
-
-			if(!tokens[lastSemi + 3].equal(",") || !tokens[lastSemi + 5].equal(",") || tokens[lastSemi + 7].equal(",") ){
-				writeln("Wrong number of Arguments for tri: ");
-				string error = "";
-				for(int i = 1; lastSemi + i < tokens.length && !tokens[lastSemi + i].equal(";") ; i++){
-					error = error ~ tokens[lastSemi + i] ~ " ";
-				}
-				writeln(error);
-				return -1;
-			}
-
-			string coord;
-			nextCheck += 1;
-			for(int i = 0; i < 3; i++){
-				coord = tokens[nextCheck];
-				nextCheck += 2;
-
-				if(checkCoord(coord) == -1){
-					writeln(coord, " is not a valid coordinate at");
-					writeln("tri ", tokens[lastSemi+2], ',', tokens[lastSemi+4], ',', tokens[lastSemi+6]);
-					return -1;
-				}
-			}
-		} else {
-			writeln(tokens[nextCheck] ~ " is not a valid command at");
-			string error = "";
-			for(int i = 1; lastSemi + i < tokens.length && !tokens[lastSemi + i].equal(";") ; i++){
-				error = error ~ tokens[lastSemi + i] ~ " ";
-			}
-			writeln(error);
-			return -1;
-		}
-		
-		lastSemi = lastIndexOf(tokens, ";", lastSemi-1);
-
-		if(lastSemi == -1 && doneFirst == false){
-			lastSemi = 0;
-			doneFirst = true;
+	// Amount of times to loop
+	int loop = 1;
+	for(int i = 0; i < tokens.length; i++){
+		if(tokens[i].equal(";")){
+			loop++;
 		}
 	}
 
-    return 0;
+
+	// Loops through all statements
+	for(;loop>0; loop--){
+
+		// Begins check at rightmost sequence.
+		int lastSemi = lastIndexOf(tokens, ";");
+		// Starts at open, if no ';' found
+		if(lastSemi == -1){
+			lastSemi = 0;
+		}
+
+		int coordNum;
+		if(tokens[lastSemi + 1].equal("rec")){
+			coordNum = 2;
+		} else if(tokens[lastSemi + 1].equal("tri")){
+			coordNum = 3;
+		} else {
+			generateError(tokens, lastSemi, tokens[lastSemi + 1] ~ " is not a command");
+			return -1;
+		}
+
+		// Look for Segment Fault Errors
+		if(lastSemi + (2 * coordNum) >= tokens.length){
+			generateError(tokens, lastSemi, "Not enough Arguments:");
+			return -1;
+		}
+
+		// Look for correct number of arguments
+		int hasCoords = 1;
+		for(int i = 1; tokens[lastSemi + (1 + (2 * i))].equal(","); i++){
+			hasCoords++;
+		}
+
+		if(hasCoords != coordNum){
+			generateError(tokens, lastSemi, "Wrong number of Arguments: ");
+			return -1;
+		}
+
+		// Checks if Coords are valid
+		for(int i = 1; i <= coordNum; i++){
+			string coord = tokens[lastSemi + 2 * i];
+
+			switch(checkCoord(coord)){
+				case -1:
+					generateError(tokens, lastSemi, coord ~ " is not a valid coordinate at");
+					return -1;
+				case -2:
+					generateError(tokens, lastSemi, coord ~ " is not a valid coordinate. Must be 2 characters long at");
+					return -1;
+				default:
+					break;
+			}
+		}
+	}
+
+	// Return no Error	
+  return 0;
 }
 
+void generateError(string[] tokens, int pos, string message){
+	writeln(message);
+	string error = "";
+	for(int i = 1 + pos; i < tokens.length && !tokens[i].equal(";") ; i++){
+		error = error ~ tokens[i] ~ " ";
+	}
+	writeln(error);
+}
+
+// Checks if a coordinate is valid
 int checkCoord(string coord) {
+	// A coordinate must be 2 characters long.
 	if(coord.length != 2){
-		return -1;
+		return -2;
 	}
 
 	// r | s | t | u | v | w | x 
@@ -219,9 +236,16 @@ int checkCoord(string coord) {
 	return 0;
 }
 
-string[][] derivation(string[] tokens) {
-	string partree = "open <stmt_list> close";
-	string[][] outpArr = [["<program>"], ["/", "|", "\\"], ["open", "<stmt_list>", "close"], //Guaranteed to Exist
+// Does the Parsing
+void parseTok(string[] tokens) {
+	// Initialization of Parse String
+	string parString = "open <stmt_list> close";
+
+	// Initialization of Tree Array
+	string[][] treeArr = [
+							["<program>"], 
+							["/", "|", "\\"], 
+							["open", "<stmt_list>", "close"], //Guaranteed to Exist
 						  [], // |
 						  [], // STMT
 						  [], // |
@@ -229,187 +253,256 @@ string[][] derivation(string[] tokens) {
 						  [], // |
 						  [], // X, Y
 						  [], // |
-						  [] // Value
+						  []  // Value
 						  ];
-	int currOutpArrPos = 3;
-	int progCount = 1;
-	int timesPassed = 0;
+
+	// Initialize Variables
+	int currtreeArrPos = 3; // Current Position on TreeArr
+	int numOfStatements = 0;// Number of Statements
+	
+	// Add more arrays to tree depending on number of statements
 	for(int i = 0; i < tokens.length; i++){
 		if(tokens[i].equal(";")){
-			progCount++;
-			outpArr ~= [[],[]];
+			treeArr ~= [[],[]];
 		}
 	}
+
+	// Find last Semi
 	int lastSemi = lastIndexOf(tokens, ";");
-	while(partree.indexOf("<") != -1){
-		writeln(partree);
+	// Replace <stmt_list> with corresponding tag
+	while (parString.indexOf("<stmt_list>") != -1){
+		writeln(parString);
+
+		if(lastSemi != -1){
+			// If not last statement, add a next <stmt_list>
+			parString = parString.replaceLast("<stmt_list>","<stmt> ; <stmt_list>");
+
+			// Adds lines to first 4 rows of tree arr
+			treeArr[currtreeArrPos] ~= ["/", "\\"] ;
+			treeArr[currtreeArrPos + 1] ~= ["<stmt>;", "<stmt_list>"] ;
+			for(int i = 0; i <= numOfStatements; i++) {
+				treeArr[currtreeArrPos + 2] ~= ["|"];
+				treeArr[currtreeArrPos + 3] ~= ["|"];	
+			}
+		} else {
+			// If last statement, add only a <stmt>
+			parString = parString.replaceLast("<stmt_list>","<stmt>");
+
+			// Adds line and stmt to tree arr
+			treeArr[currtreeArrPos] ~= ["|"] ;
+			treeArr[currtreeArrPos + 1] ~= ["<stmt>"]  ;
+		}
+		
+		// Move the current position two lines below
+		currtreeArrPos += 2;
+
+		// Move to next statement
+		lastSemi = lastIndexOf(tokens, ";", lastSemi - 1);
+		numOfStatements++;
+	}
+
+	// Set to rightmost statement
+	lastSemi = lastIndexOf(tokens, ";");
+	// Search for '<' which is start of tag
+	while(parString.indexOf("<") != -1){
+		writeln(parString);
 		
 		if(lastSemi == -1){
 			lastSemi = 0;
 		}
 
-		int stmt_list = partree.indexOf("<stmt_list>");
+		// Replace <stmt> with corresponding command
+		int coordNum; // Used to log the amount of coordinates to process
+		if(tokens[lastSemi+1].equal("rec")){
+			coordNum = 2; // rec holds 2 coordinates
+			parString = parString.replaceLast("<stmt>", "rec <coord>, <coord>");
 
-		if(stmt_list != -1) {
-			if(lastSemi != 0){
-				partree = partree.replaceLast("<stmt_list>","<stmt> ; <stmt_list>");
-				outpArr[currOutpArrPos] ~= ["/", "\\"] ;
-				outpArr[currOutpArrPos + 1] ~= ["<stmt>;", "<stmt_list>"] ;
-				for(int i = 0; i <= timesPassed; i++) {
-					if(tokens[lastSemi+1].equal("rec")){
-						outpArr[currOutpArrPos + 2] ~= ["|"];
-						outpArr[currOutpArrPos + 3] ~= ["|"];
-					} else {
-						outpArr[currOutpArrPos + 2] ~= ["|"];
-						outpArr[currOutpArrPos + 3] ~= ["|"];
-					}
-					
-				}
-				currOutpArrPos += 2;
-			} else {
-				partree = partree.replaceLast("<stmt_list>","<stmt>");
-				if(timesPassed) {
-					outpArr[currOutpArrPos] ~= ["\\"] ;
-				}
-				else {
-					outpArr[currOutpArrPos] ~= ["|"] ;
-				}
-				outpArr[currOutpArrPos + 1] ~= ["<stmt>"]  ;
-				currOutpArrPos += 2;
-			}
-			lastSemi = lastIndexOf(tokens, ";", lastSemi - 1);
-
-			timesPassed++;
-			continue;
+			// Add components to the tree array
+			treeArr[currtreeArrPos] = ["/", "|", "\\"] ~ treeArr[currtreeArrPos];
+			treeArr[currtreeArrPos + 1] = ["rec ", "<coord>,", "<coord>"] ~ treeArr[currtreeArrPos + 1];
+			treeArr[currtreeArrPos + 2] = ["/","\\", "/","\\" ] ~ treeArr[currtreeArrPos + 2];
+			treeArr[currtreeArrPos + 3] = ["<x>", "<y>","<x>", "<y>"] ~ treeArr[currtreeArrPos + 3];
+		}
+		else if(tokens[lastSemi+1].equal("tri")){
+			coordNum = 3;	// rec holds 3 coordinates
+			parString = parString.replaceLast("<stmt>", "tri <coord>, <coord>, <coord>");
+		
+			// Add components to the tree array
+			treeArr[currtreeArrPos] = ["/", "|", "\\", "\\"] ~ treeArr[currtreeArrPos];
+			treeArr[currtreeArrPos + 1] = ["tri ", "<coord>,", "<coord>,", "<coord>"] ~ treeArr[currtreeArrPos + 1];
+			treeArr[currtreeArrPos + 2] = ["/","\\", "/","\\" , "/", "\\"] ~ treeArr[currtreeArrPos + 2];
+			treeArr[currtreeArrPos + 3] = ["<x>", "<y>","<x>", "<y>","<x>", "<y>"] ~ treeArr[currtreeArrPos + 3];
 		}
 
-		int stmt = partree.indexOf("<stmt>");
 
-		if(stmt != -1) {
-			if(tokens[lastSemi+1].equal("rec")){
-				partree = partree.replaceLast("<stmt>", "rec <coord>, <coord>");
+		writeln(parString); // Output Line
+		currtreeArrPos += 4;// Move down the Tree Array
 
-				writeln(partree);
+		// Dynamically create the Coordinates  
+		string [][] outpCoordArr = [[],[]];
+		for(int k = 2 * coordNum; k > 1; k-=2 ){
+			// Replace the coord tag with the x and y tags
+			parString = parString.replaceLast("<coord>", "<x><y>" );
+			writeln(parString);
 
-				outpArr[currOutpArrPos] = ["/", "|", "\\"] ~ outpArr[currOutpArrPos];
-				outpArr[currOutpArrPos + 1] = ["rec ", "<coord>,", "<coord>"] ~ outpArr[currOutpArrPos + 1];
-				outpArr[currOutpArrPos + 2] = ["/","\\", "/","\\" ] ~ outpArr[currOutpArrPos + 2];
-				outpArr[currOutpArrPos + 3] = ["<x>", "<y>","<x>", "<y>"] ~ outpArr[currOutpArrPos + 3];
-				currOutpArrPos += 4;
+			// Process the coordinate
+			string coord = tokens[lastSemi+k];
+			string y = to!string(coord[1]);
+			string x = to!string(coord[0]);
 
-				string [][] outpCoordArr = [[],[]];
-				for(int k = 4; k > 1; k-=2 ){
-					partree = partree.replaceLast("<coord>", "<x><y>" );
-					writeln(partree);
-					string coord = tokens[lastSemi+k];
-					string y = to!string(coord[1]);
-					string x = to!string(coord[0]);
-					partree = partree.replaceLast("<y>",y);
-					outpCoordArr[0] = [" | "] ~ outpCoordArr[0];
-					outpCoordArr[1] = [y] ~ outpCoordArr[1];
-					writeln(partree);
-					partree = partree.replaceLast("<x>",x);
-					outpCoordArr[0] = [" | "] ~ outpCoordArr[0];
-					outpCoordArr[1] = [x]  ~ outpCoordArr[1];
-					writeln(partree);
-				}
-				outpArr[currOutpArrPos] = outpCoordArr[0] ~ outpArr[currOutpArrPos];
-				outpArr[currOutpArrPos + 1] = outpCoordArr[1] ~ outpArr[currOutpArrPos + 1];
-				currOutpArrPos+=2;
+			// y coordinate in parse string
+			parString = parString.replaceLast("<y>",y);
 
-			}
-			else if(tokens[lastSemi+1].equal("tri")){
-				partree = partree.replaceLast("<stmt>", "tri <coord>, <coord>, <coord>");
-				writeln(partree);
-			
-				outpArr[currOutpArrPos] = ["/", "|", "\\", "\\"] ~ outpArr[currOutpArrPos];
-				outpArr[currOutpArrPos + 1] = ["tri ", "<coord>,", "<coord>,", "<coord>"] ~ outpArr[currOutpArrPos + 1];
-				outpArr[currOutpArrPos + 2] = ["/","\\", "/","\\" , "/", "\\"] ~ outpArr[currOutpArrPos + 2];
-				outpArr[currOutpArrPos + 3] = ["<x>", "<y>","<x>", "<y>","<x>", "<y>"] ~ outpArr[currOutpArrPos + 3];
-				currOutpArrPos += 4;
-				string [][] outpCoordArr = [[],[]];
-				for(int k = 6; k > 1; k-=2 ){
-					partree = partree.replaceLast("<coord>", "<x><y>" );
-					writeln(partree);
-					string coord = tokens[lastSemi+k];
-					string y = to!string(coord[1]);
-					string x = to!string(coord[0]);
-					partree = partree.replaceLast("<y>",y);
-					outpCoordArr[0] = [" | "] ~ outpCoordArr[0];
-					outpCoordArr[1] = [y]  ~ outpCoordArr[1];
-					writeln(partree);
-					partree = partree.replaceLast("<x>",x);
-					outpCoordArr[0] = [" | "] ~ outpCoordArr[0];
-					outpCoordArr[1] = [x] ~ outpCoordArr[1];
-					writeln(partree);
-				}
+			// y coordinate in coordinate array
+			outpCoordArr[0] = [" | "] ~ outpCoordArr[0];
+			outpCoordArr[1] = [y] ~ outpCoordArr[1];
+			writeln(parString);
 
-				outpArr[currOutpArrPos] = outpCoordArr[0] ~ outpArr[currOutpArrPos];
-				outpArr[currOutpArrPos + 1] = outpCoordArr[1] ~ outpArr[currOutpArrPos + 1];
-				currOutpArrPos+=2;
-			}				
-			currOutpArrPos-= 6;
-			
-			outpArr[currOutpArrPos + 2] = " " ~ outpArr[currOutpArrPos + 2];
-			outpArr[currOutpArrPos + 3] = " " ~ outpArr[currOutpArrPos + 3];
-			outpArr[currOutpArrPos + 4] = " " ~ outpArr[currOutpArrPos + 4];
-			outpArr[currOutpArrPos + 5] = " " ~ outpArr[currOutpArrPos + 5];
-			outpArr[currOutpArrPos + 2] = " " ~ outpArr[currOutpArrPos + 2];
-			outpArr[currOutpArrPos + 3] = " " ~ outpArr[currOutpArrPos + 3];
-			outpArr[currOutpArrPos + 4] = " " ~ outpArr[currOutpArrPos + 4];
-			outpArr[currOutpArrPos + 5] = " " ~ outpArr[currOutpArrPos + 5];
+			// x coordinate in parse string
+			parString = parString.replaceLast("<x>",x);
 
-			lastSemi = lastIndexOf(tokens, ";", lastSemi - 1);
-			
+			// x coordinate in coordinate array
+			outpCoordArr[0] = [" | "] ~ outpCoordArr[0];
+			outpCoordArr[1] = [x]  ~ outpCoordArr[1];
+			writeln(parString);
 		}
 
+		// Add the coordinate array to the tree array
+		treeArr[currtreeArrPos] = outpCoordArr[0] ~ treeArr[currtreeArrPos];
+		treeArr[currtreeArrPos + 1] = outpCoordArr[1] ~ treeArr[currtreeArrPos + 1];
+
+{
+		//if(tokens[lastSemi+1].equal("rec")){
+		//	parString = parString.replaceLast("<stmt>", "rec <coord>, <coord>");
+
+		//	writeln(parString);
+
+		//	treeArr[currtreeArrPos] = ["/", "|", "\\"] ~ treeArr[currtreeArrPos];
+		//	treeArr[currtreeArrPos + 1] = ["rec ", "<coord>,", "<coord>"] ~ treeArr[currtreeArrPos + 1];
+		//	treeArr[currtreeArrPos + 2] = ["/","\\", "/","\\" ] ~ treeArr[currtreeArrPos + 2];
+		//	treeArr[currtreeArrPos + 3] = ["<x>", "<y>","<x>", "<y>"] ~ treeArr[currtreeArrPos + 3];
+		//	currtreeArrPos += 4;
+
+		//	string [][] outpCoordArr = [[],[]];
+		//	for(int k = 4; k > 1; k-=2 ){
+		//		parString = parString.replaceLast("<coord>", "<x><y>" );
+		//		writeln(parString);
+		//		string coord = tokens[lastSemi+k];
+		//		string y = to!string(coord[1]);
+		//		string x = to!string(coord[0]);
+		//		parString = parString.replaceLast("<y>",y);
+		//		outpCoordArr[0] = [" | "] ~ outpCoordArr[0];
+		//		outpCoordArr[1] = [y] ~ outpCoordArr[1];
+		//		writeln(parString);
+		//		parString = parString.replaceLast("<x>",x);
+		//		outpCoordArr[0] = [" | "] ~ outpCoordArr[0];
+		//		outpCoordArr[1] = [x]  ~ outpCoordArr[1];
+		//		writeln(parString);
+		//	}
+		//	treeArr[currtreeArrPos] = outpCoordArr[0] ~ treeArr[currtreeArrPos];
+		//	treeArr[currtreeArrPos + 1] = outpCoordArr[1] ~ treeArr[currtreeArrPos + 1];
+		//	currtreeArrPos+=2;
+
+		//}
+		//else if(tokens[lastSemi+1].equal("tri")){
+		//	parString = parString.replaceLast("<stmt>", "tri <coord>, <coord>, <coord>");
+		//	writeln(parString);
+		
+		//	treeArr[currtreeArrPos] = ["/", "|", "\\", "\\"] ~ treeArr[currtreeArrPos];
+		//	treeArr[currtreeArrPos + 1] = ["tri ", "<coord>,", "<coord>,", "<coord>"] ~ treeArr[currtreeArrPos + 1];
+		//	treeArr[currtreeArrPos + 2] = ["/","\\", "/","\\" , "/", "\\"] ~ treeArr[currtreeArrPos + 2];
+		//	treeArr[currtreeArrPos + 3] = ["<x>", "<y>","<x>", "<y>","<x>", "<y>"] ~ treeArr[currtreeArrPos + 3];
+		//	currtreeArrPos += 4;
+		//	string [][] outpCoordArr = [[],[]];
+		//	for(int k = 6; k > 1; k-=2 ){
+		//		parString = parString.replaceLast("<coord>", "<x><y>" );
+		//		writeln(parString);
+		//		string coord = tokens[lastSemi+k];
+		//		string y = to!string(coord[1]);
+		//		string x = to!string(coord[0]);
+		//		parString = parString.replaceLast("<y>",y);
+		//		outpCoordArr[0] = [" | "] ~ outpCoordArr[0];
+		//		outpCoordArr[1] = [y]  ~ outpCoordArr[1];
+		//		writeln(parString);
+		//		parString = parString.replaceLast("<x>",x);
+		//		outpCoordArr[0] = [" | "] ~ outpCoordArr[0];
+		//		outpCoordArr[1] = [x] ~ outpCoordArr[1];
+		//		writeln(parString);
+		//	}
+
+		//	treeArr[currtreeArrPos] = outpCoordArr[0] ~ treeArr[currtreeArrPos];
+		//	treeArr[currtreeArrPos + 1] = outpCoordArr[1] ~ treeArr[currtreeArrPos + 1];
+		//	currtreeArrPos+=2;
+		//}
+}
+		// Move back up the tree
+		currtreeArrPos-= 4;
+		
+		// Add space for below the statement word
+		// Just styling
+		treeArr[currtreeArrPos + 2] = [" ", " "] ~ treeArr[currtreeArrPos + 2];
+		treeArr[currtreeArrPos + 3] = [" ", " "] ~ treeArr[currtreeArrPos + 3];
+		treeArr[currtreeArrPos + 4] = [" ", " "] ~ treeArr[currtreeArrPos + 4];
+		treeArr[currtreeArrPos + 5] = [" ", " "] ~ treeArr[currtreeArrPos + 5];
+
+		// Move to the next statement
+		lastSemi = lastIndexOf(tokens, ";", lastSemi - 1);
 	}
 
-	return outpArr;
+	// Print the tree using the tree array
+	printParseTree(treeArr);
 }
 
+// Used to center words in a given length
 string getPrintLine(string x, int len){
 	int space = (len - x.length)/2;
 
+	// Ensures no overflow
 	if(space > len){
 		return x;
 	}
 
+	// Add spaces
 	for(int i = 0; i < space; i++){
 		x = " " ~ x ~ " ";
 	}
 
+	// Return styled line
 	return x;
 }
 
+// Prints the tree with the 
 void printParseTree(string[][] treeArr){
 
-	int count = 1;
+	//int count = 1;
 
-	for(int i = 0; i < treeArr[treeArr.length - 7].length; i++){
-		if(treeArr[treeArr.length - 7][i].equal("|")){
-			count++;
-		}
-	}
+	//for(int i = 0; i < treeArr[treeArr.length - 7].length; i++){
+	//	if(treeArr[treeArr.length - 7][i].equal("|")){
+	//		count++;
+	//	}
+	//}
 
-	writeln(count);
+	// The target width for the tree
 	int treeL = 160;
 
-
+	// Print tree with loop
 	for(int i = 0; i < treeArr.length; i++){
+		// Initial string
 		string outp = "";
+		// Line Width depends on amount of items
 		int lw = treeL/treeArr[i].length;
 
+		// Get full line
 		for (int k = 0; k < treeArr[i].length; k++){
 			outp ~= getPrintLine(treeArr[i][k], lw);
 		}
 
+		// Reach target width
 		while(outp.length < treeL){
 			outp = " " ~ outp ~ " ";
 		}
 
-		writeln(outp);
-		writeln();
+		writeln(outp, '\n');
 	}
 }
 
@@ -418,27 +511,55 @@ void main()
 {
 
     string str;
-    writeln("Please enter the code: (use 'EXIT' to exit)");
+    // Print Grammar
+    writeln(` 
+    	Program Grammar:
+			<program>   ->  open <stmt_list> close
+			<stmt_list> ->  <stmt>
+			               | <stmt> ; <stmt_list>
+			<stmt>      ->  rec <coord>,<coord>
+			           ->  | tri <coord>,<coord>,<coord>
+			<coord>     ->  <x><y>
+			<x>         ->  r | s | t | u | v | w | x
+			<y>         ->  1 | 2 | 3 | 4 | 5 | 6 |
+    `);
+    writeln("Please enter the code: (use 'EXIT' to exit or 'HELP' for grammar again.)");
+    // Reads line
     while ((str = stdin.readln()) !is null) {
-        if(str == "EXIT\n"){
-        	break;
-        }
-		if(str == "\n") { writeln("Please enter the code: (use 'EXIT' to exit)"); continue;}
+      if(str == "EXIT\n"){
+      	break; 																					// Break on "EXIT"
+      }
+      if(str == "HELP\n"){															// Grammar on "HELP"
+      	writeln(` 
+		    	Program Grammar:
+					<program>   ->  open <stmt_list> close
+					<stmt_list> ->  <stmt>
+					               | <stmt> ; <stmt_list>
+					<stmt>      ->  rec <coord>,<coord>
+					           ->  | tri <coord>,<coord>,<coord>
+					<coord>     ->  <x><y>
+					<x>         ->  r | s | t | u | v | w | x
+					<y>         ->  1 | 2 | 3 | 4 | 5 | 6 |
+		    `);
+    		writeln("Please enter the code: (use 'EXIT' to exit or 'HELP' for grammar again.)");
+		    continue;
+      }
+			// Restate prompt on empty
+			if(str == "\n") { writeln("Please enter the code: (use 'EXIT' to exit or 'HELP' for grammar again.)"); continue;}
 
-    	string[] tokens = tokenizeStr(str);
+			// Main Program
+	  	string[] tokens = tokenizeStr(str);
 
-        if(checkGrammar(tokens) != -1){
+	    if(checkGrammar(tokens) != -1){
 		    writeln("\nGrammar Good");
-			string[][] treeArr = derivation(tokens);
-			
-			printParseTree(treeArr);
-		} 
+				parseTok(tokens);
+			} 
 
-		//writeln(getPrintLine(str, 50));
-
-		writeln("\nPlease enter the code: (use 'EXIT' to exit)");
+			// Restate prompt
+			writeln("Please enter the code: (use 'EXIT' to exit or 'HELP' for grammar again.)");
     }
 
+    // End program
     writeln("ENDING");
 }
 
