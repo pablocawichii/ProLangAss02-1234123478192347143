@@ -1,11 +1,5 @@
 import std;
 
-
-//open rec r1, r2;tri r3 ,r4, r5 ; rec r5 ,r6  close
-//open rec r1, r2; tri r3, r4, r5 close
-//open rec r1, r2 close
-//open tri r1, r2, r3 close
-
 // This function finds the index of a string in an array.
 // Returns -1 if not found.
 int lastIndexOf(string[] tokens, string text, int start = -1) {
@@ -129,7 +123,6 @@ int checkGrammar(string[] tokens) {
 		}
 	}
 
-
 	// Loops through all statements
 	for(;loop>0; loop--){
 
@@ -176,7 +169,7 @@ int checkGrammar(string[] tokens) {
 					generateError(tokens, lastSemi, coord ~ " is not a valid coordinate at");
 					return -1;
 				case -2:
-					generateError(tokens, lastSemi, coord ~ " is not a valid coordinate. Must be 2 characters long at");
+					generateError(tokens, lastSemi, coord ~ " is not a valid coordinate. Must be 2 characters long. at");
 					return -1;
 				default:
 					break;
@@ -371,70 +364,6 @@ void parseTok(string[] tokens) {
 		treeArr[currtreeArrPos] = outpCoordArr[0] ~ treeArr[currtreeArrPos];
 		treeArr[currtreeArrPos + 1] = outpCoordArr[1] ~ treeArr[currtreeArrPos + 1];
 
-{
-		//if(tokens[lastSemi+1].equal("rec")){
-		//	parString = parString.replaceLast("<stmt>", "rec <coord>, <coord>");
-
-		//	writeln(parString);
-
-		//	treeArr[currtreeArrPos] = ["/", "|", "\\"] ~ treeArr[currtreeArrPos];
-		//	treeArr[currtreeArrPos + 1] = ["rec ", "<coord>,", "<coord>"] ~ treeArr[currtreeArrPos + 1];
-		//	treeArr[currtreeArrPos + 2] = ["/","\\", "/","\\" ] ~ treeArr[currtreeArrPos + 2];
-		//	treeArr[currtreeArrPos + 3] = ["<x>", "<y>","<x>", "<y>"] ~ treeArr[currtreeArrPos + 3];
-		//	currtreeArrPos += 4;
-
-		//	string [][] outpCoordArr = [[],[]];
-		//	for(int k = 4; k > 1; k-=2 ){
-		//		parString = parString.replaceLast("<coord>", "<x><y>" );
-		//		writeln(parString);
-		//		string coord = tokens[lastSemi+k];
-		//		string y = to!string(coord[1]);
-		//		string x = to!string(coord[0]);
-		//		parString = parString.replaceLast("<y>",y);
-		//		outpCoordArr[0] = [" | "] ~ outpCoordArr[0];
-		//		outpCoordArr[1] = [y] ~ outpCoordArr[1];
-		//		writeln(parString);
-		//		parString = parString.replaceLast("<x>",x);
-		//		outpCoordArr[0] = [" | "] ~ outpCoordArr[0];
-		//		outpCoordArr[1] = [x]  ~ outpCoordArr[1];
-		//		writeln(parString);
-		//	}
-		//	treeArr[currtreeArrPos] = outpCoordArr[0] ~ treeArr[currtreeArrPos];
-		//	treeArr[currtreeArrPos + 1] = outpCoordArr[1] ~ treeArr[currtreeArrPos + 1];
-		//	currtreeArrPos+=2;
-
-		//}
-		//else if(tokens[lastSemi+1].equal("tri")){
-		//	parString = parString.replaceLast("<stmt>", "tri <coord>, <coord>, <coord>");
-		//	writeln(parString);
-		
-		//	treeArr[currtreeArrPos] = ["/", "|", "\\", "\\"] ~ treeArr[currtreeArrPos];
-		//	treeArr[currtreeArrPos + 1] = ["tri ", "<coord>,", "<coord>,", "<coord>"] ~ treeArr[currtreeArrPos + 1];
-		//	treeArr[currtreeArrPos + 2] = ["/","\\", "/","\\" , "/", "\\"] ~ treeArr[currtreeArrPos + 2];
-		//	treeArr[currtreeArrPos + 3] = ["<x>", "<y>","<x>", "<y>","<x>", "<y>"] ~ treeArr[currtreeArrPos + 3];
-		//	currtreeArrPos += 4;
-		//	string [][] outpCoordArr = [[],[]];
-		//	for(int k = 6; k > 1; k-=2 ){
-		//		parString = parString.replaceLast("<coord>", "<x><y>" );
-		//		writeln(parString);
-		//		string coord = tokens[lastSemi+k];
-		//		string y = to!string(coord[1]);
-		//		string x = to!string(coord[0]);
-		//		parString = parString.replaceLast("<y>",y);
-		//		outpCoordArr[0] = [" | "] ~ outpCoordArr[0];
-		//		outpCoordArr[1] = [y]  ~ outpCoordArr[1];
-		//		writeln(parString);
-		//		parString = parString.replaceLast("<x>",x);
-		//		outpCoordArr[0] = [" | "] ~ outpCoordArr[0];
-		//		outpCoordArr[1] = [x] ~ outpCoordArr[1];
-		//		writeln(parString);
-		//	}
-
-		//	treeArr[currtreeArrPos] = outpCoordArr[0] ~ treeArr[currtreeArrPos];
-		//	treeArr[currtreeArrPos + 1] = outpCoordArr[1] ~ treeArr[currtreeArrPos + 1];
-		//	currtreeArrPos+=2;
-		//}
-}
 		// Move back up the tree
 		currtreeArrPos-= 4;
 		
@@ -473,14 +402,6 @@ string getPrintLine(string x, int len){
 
 // Prints the tree with the 
 void printParseTree(string[][] treeArr){
-
-	//int count = 1;
-
-	//for(int i = 0; i < treeArr[treeArr.length - 7].length; i++){
-	//	if(treeArr[treeArr.length - 7][i].equal("|")){
-	//		count++;
-	//	}
-	//}
 
 	// The target width for the tree
 	int treeL = 160;
