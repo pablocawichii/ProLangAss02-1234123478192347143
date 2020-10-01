@@ -121,11 +121,11 @@ int checkGrammar(string[] tokens) {
 		}
 	}
 
+	// Begins check at rightmost sequence.
 	int lastSemi = lastIndexOf(tokens, ";");
 	// Loops through all statements
 	for(;loop>0; loop--){
 
-		// Begins check at rightmost sequence.
 		// Starts at open, if no ';' found
 		if(lastSemi == -1){
 			lastSemi = 0;
@@ -174,6 +174,7 @@ int checkGrammar(string[] tokens) {
 			}
 		}
 
+		// Moves to next Statement
 		lastSemi = lastIndexOf(tokens, ";", lastSemi - 1);
 	}
 
