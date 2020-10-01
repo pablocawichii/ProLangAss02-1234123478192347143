@@ -94,8 +94,6 @@ string[] tokenizeStr(string str) {
 		}
 	}
 
-	// Writeln is for Debugging
-  // writeln(a);
   // Returns the now tokenized string
   return a;
 }
@@ -123,11 +121,11 @@ int checkGrammar(string[] tokens) {
 		}
 	}
 
+	int lastSemi = lastIndexOf(tokens, ";");
 	// Loops through all statements
 	for(;loop>0; loop--){
 
 		// Begins check at rightmost sequence.
-		int lastSemi = lastIndexOf(tokens, ";");
 		// Starts at open, if no ';' found
 		if(lastSemi == -1){
 			lastSemi = 0;
@@ -175,6 +173,8 @@ int checkGrammar(string[] tokens) {
 					break;
 			}
 		}
+
+		lastSemi = lastIndexOf(tokens, ";", lastSemi - 1);
 	}
 
 	// Return no Error	
@@ -327,7 +327,6 @@ void parseTok(string[] tokens) {
 			treeArr[currtreeArrPos + 3] = ["<x>", "<y>","<x>", "<y>","<x>", "<y>"] ~ treeArr[currtreeArrPos + 3];
 		}
 
-
 		writeln(parString); // Output Line
 		currtreeArrPos += 4;// Move down the Tree Array
 
@@ -445,6 +444,7 @@ void main()
 			<y>         ->  1 | 2 | 3 | 4 | 5 | 6 |
     `);
     writeln("Please enter the code: (use 'EXIT' to exit or 'HELP' for grammar again.)");
+
     // Reads line
     while ((str = stdin.readln()) !is null) {
       if(str == "EXIT\n"){
@@ -470,16 +470,13 @@ void main()
 
 			// Main Program
 	  	string[] tokens = tokenizeStr(str);
-
 	    if(checkGrammar(tokens) != -1){
 		    writeln("\nGrammar Good");
 				parseTok(tokens);
 			} 
-
 			// Restate prompt
 			writeln("Please enter the code: (use 'EXIT' to exit or 'HELP' for grammar again.)");
     }
-
     // End program
     writeln("ENDING");
 }
